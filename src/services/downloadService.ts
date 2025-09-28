@@ -141,50 +141,65 @@ const downloadSingleFile = async (
  * Attempts to fetch with CORS handling using our API proxy
  */
 const fetchWithCorsProxy = async (url: string): Promise<Response> => {
-  // First, try using our API proxy
+  // First, try using our API proxy (primary method for Vercel)
   try {
     const proxyUrl = `/api/download?url=${encodeURIComponent(url)}`;
     const response = await fetch(proxyUrl, {
       method: 'GET',
       headers: {
         'Accept': 'image/*,*/*',
+        'Content-Type': 'application/json',
       },
+      cache: 'no-cache',
     });
     
     if (response.ok) {
+      console.log('✅ Proxy fetch successful');
       return response;
+    } else {
+      console.warn(`Proxy fetch failed with status: ${response.status}`);
+      const errorText = await response.text();
+      console.warn('Proxy error details:', errorText);
     }
   } catch (error) {
-    console.warn('Proxy fetch failed, trying direct fetch:', error);
+    console.warn('Proxy fetch failed with error:', error);
   }
 
-  // Fallback to direct fetch
+  // Fallback to direct fetch with better error handling
   try {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Accept': 'image/*,*/*',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
       mode: 'cors',
     });
     
     if (response.ok) {
+      console.log('✅ Direct fetch successful');
       return response;
+    } else {
+      console.warn(`Direct fetch failed with status: ${response.status}`);
     }
   } catch (error) {
-    console.warn('Direct fetch failed:', error);
+    console.warn('Direct fetch failed with error:', error);
   }
 
   // Last resort: try with no-cors mode (limited functionality)
   try {
+    console.log('Trying no-cors mode as last resort...');
     const response = await fetch(url, {
       method: 'GET',
       mode: 'no-cors',
     });
+    
+    // Note: no-cors mode doesn't allow reading response status or body
+    // This is mainly for triggering browser download behavior
     return response;
   } catch (error) {
     console.error('All fetch methods failed:', error);
-    throw new Error('Unable to download file due to CORS restrictions');
+    throw new Error(`Unable to download file due to CORS restrictions. URL: ${url}`);
   }
 };
 

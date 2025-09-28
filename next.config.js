@@ -10,6 +10,16 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+          { key: 'Access-Control-Max-Age', value: '86400' },
+        ],
+      },
+      {
+        // Apply security headers for better performance
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
         ],
       },
     ];
@@ -29,7 +39,7 @@ const nextConfig = {
       crypto: false,
     };
     
-    // Optimize for serverless functions
+    // Optimize for serverless functions on Vercel
     if (isServer) {
       config.externals = [...(config.externals || []), 'canvas', 'jsdom'];
     }
@@ -37,13 +47,25 @@ const nextConfig = {
     return config;
   },
   
-  // Image optimization settings
+  // Image optimization settings for Vercel
   images: {
     domains: ['drive.google.com', 'docs.google.com'],
-    unoptimized: true, // For better compatibility with static exports
+    unoptimized: true, // Better for serverless deployment
   },
   
-  // Remove API configuration to avoid conflicts with Vercel
+  // Vercel-specific optimizations
+  poweredByHeader: false,
+  compress: true,
+  
+  // API route configuration for Vercel
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: '/api/:path*',
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
