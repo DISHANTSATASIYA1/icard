@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Google Drive Link Extractor & Downloader
 
 A Next.js application that extracts Google Drive links from Excel files and downloads images with automatic renaming.
@@ -97,3 +98,7 @@ src/
 ## License
 
 MIT License - feel free to use for personal or commercial projects.
+=======
+# icard
+icard
+>>>>>>> a3d618effd92a422b890900f862a76e4c1e7b424
